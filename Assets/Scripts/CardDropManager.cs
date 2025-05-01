@@ -20,13 +20,19 @@ public void TryPlaceCard(DraggableCard card)
 
     if (tilemap.HasTile(cellPos))
     {
-        card.transform.position = tilemap.GetCellCenterWorld(cellPos);
+        Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
+        card.transform.position = cellCenter;
+
+
+        card.SetLastValidPosition(cellCenter);
+
         card.LockPlacement();
-        card.ShowAvailableMoves(tilemap); // ← new line
+        card.ShowAvailableMoves(tilemap);
     }
     else
     {
-        Destroy(card.gameObject);
+
+        card.SnapBackToLastValidPosition();
     }
 }
 }

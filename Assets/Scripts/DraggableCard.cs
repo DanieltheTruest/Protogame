@@ -10,6 +10,19 @@ public class DraggableCard : MonoBehaviour
 {   
     private static DraggableCard currentlySelected;
     private bool isSelected = false;
+
+    private Vector3 lastValidWorldPosition;
+
+public void SetLastValidPosition(Vector3 pos)
+{
+    lastValidWorldPosition = pos;
+}
+
+public void SnapBackToLastValidPosition()
+{
+    transform.position = lastValidWorldPosition;
+    Debug.Log("Card snapped back to last valid position.");
+}
 private List<GameObject> spawnedMarkers = new();
 
 [SerializeField] private GameObject highlightMarkerPrefab;
@@ -144,16 +157,32 @@ private bool IsClickedOnSelf(Vector3 mouseWorldPos)
     }
 }
 private void MoveTo(Vector3Int cell)
-{
-    transform.position = tilemap.GetCellCenterWorld(cell);
+{   
+    Vector3 worldPos = tilemap.GetCellCenterWorld(cell);
+    transform.position = worldPos;
+
+    lastValidWorldPosition = worldPos; 
+
     ClearHighlights();
+    isSelected = false;
+    IsPlaced = true;
     reachableTiles.Clear();
-    isSelected = false;
+
+    CheckForCoinAtPosition(worldPos);
 }
-private void Deselect()
+private void CheckForCoinAtPosition(Vector3 position)
 {
-    isSelected = false;
-    ClearHighlights();
+    Collider2D[] hits = Physics2D.OverlapCircleAll(position, 0.1f);  
+
+    foreach (var hit in hits)
+    {
+        if (hit.CompareTag("Coin"))
+        {
+            Destroy(hit.gameObject);  // Collect the coin
+            Debug.Log($"{gameObject.name} collected a coin!");
+
+        }
+    }
 }
 
 }
